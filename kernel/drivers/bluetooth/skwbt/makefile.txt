@@ -1,0 +1,5 @@
+obj-$(CONFIG_SKW_BT)       += skwbt.o
+skwbt-y                    := skw_btdriver.o
+skwbt-y                    += skw_btsnoop.o
+skwbt-y                    += skw_log.o
+skwbt-y                    += skw_common.o
