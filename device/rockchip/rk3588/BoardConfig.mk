@@ -1,0 +1,1 @@
+BoardConfig-rk3588-neardi-linux-lkd3588-f0.mk
