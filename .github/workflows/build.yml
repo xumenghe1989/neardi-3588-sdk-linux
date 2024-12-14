@@ -1,1 +1,43 @@
-111
+name: Build and Provide Download Link for neardi-3588-sdk
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-neardi-3588-sdk:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.8'
+
+    - name: Set Execute Permissions for Scripts
+      run: |
+        chmod +x envsetup.sh
+        chmod +x build.sh
+
+    - name: Run envsetup.sh
+      run: |
+        echo 29 | ./envsetup.sh
+
+    - name: Build the Project
+      run: |
+        ./build.sh
+
+    - name: Archive Build Output
+      run: |
+        mkdir -p output
+        cp -r build/output/* output/
+      
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: neardi-3588-sdk-build
+        path: output/
