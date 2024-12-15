@@ -66,10 +66,10 @@ jobs:
         run: |
           df -hT ${PWD}
           git clone https://github.com/xumenghe1989/neardi-3588-sdk-linux.git build
-          ln -sf /builder/build ${GITHUB_WORKSPACE}/build
+          ln -sf /builder/build ${GITHUB_WORKSPACE}
           #tree /home/runner/work/
           #tree /builder
-          ln -sf /builder/build /home/runner/work/xumenghe1989/neardi-3588-sdk-linux
+          #ln -sf /builder/build /home/runner/work/xumenghe1989/neardi-3588-sdk-linux/neardi-3588-sdk-linux
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Compile Armbian [ ${{ inputs.set_release }} ]
