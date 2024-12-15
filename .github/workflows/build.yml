@@ -65,9 +65,9 @@ jobs:
         if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
         run: |
           df -hT ${PWD}
-          git clone -q --single-branch --depth=1 --branch=main https://github.com/xumenghe1989/neardi-3588-sdk-linux.git build
+          git clone https://github.com/xumenghe1989/neardi-3588-sdk-linux.git build
           ln -sf /builder/build ${GITHUB_WORKSPACE}/build
-          ln -sf /builder/build /home/runner/work/_actions/xumenghe1989/neardi-3588-sdk-linux/main/build
+          ln -sf /builder/build /home/runner/work/_actions/xumenghe1989/neardi-3588-sdk-linux/build
           echo "status=success" >> ${GITHUB_OUTPUT}
 
       - name: Compile Armbian [ ${{ inputs.set_release }} ]
