@@ -1595,7 +1595,8 @@ function build_updateimg(){
 			./mkupdate.sh
 			ln -fs $source_package_file_name package-file
 		else
-			./mkupdate.sh
+			ls $IMAGE_PATH
+   			./mkupdate.sh
 		fi
 		mv update.img $IMAGE_PATH
 	fi
