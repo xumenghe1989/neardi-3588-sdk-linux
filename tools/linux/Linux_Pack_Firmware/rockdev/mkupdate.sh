@@ -13,4 +13,4 @@ fi
 echo "Making ./Image/update.img OK."
 #echo "Press any key to quit:"
 #read -n1 -s key
-exit $?
+exit 
