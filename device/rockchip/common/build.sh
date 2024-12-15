@@ -1573,6 +1573,7 @@ function build_updateimg(){
 	PACK_TOOL_DIR=$TOP_DIR/tools/linux/Linux_Pack_Firmware
 
 	cd $PACK_TOOL_DIR/rockdev
+ 	chmod +x ./mkupdate.sh
 
 	if [ -f "$RK_PACKAGE_FILE_AB" ]; then
 		build_sdcard_package
