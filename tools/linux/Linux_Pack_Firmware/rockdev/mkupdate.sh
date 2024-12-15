@@ -6,7 +6,7 @@ if [ ! -f "Image/parameter" -a ! -f "Image/parameter.txt" ]; then
 fi
 if [ ! -f "package-file" ]; then
 	echo "Error:No found package-file!"
-	exit 22
+	#exit 22
 fi
 ./afptool -pack ./ Image/update.img || pause
 ./rkImageMaker -RK3588 Image/MiniLoaderAll.bin Image/update.img update.img -os_type:androidos
