@@ -1,10 +1,4 @@
 #!/bin/bash
-pause()
-{
-echo "Press any key to quit:"
-read -n1 -s key
-exit 1
-}
 echo "start to make update.img..."
 if [ ! -f "Image/parameter" -a ! -f "Image/parameter.txt" ]; then
 	echo "Error:No found parameter!"
