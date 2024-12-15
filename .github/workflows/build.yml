@@ -79,5 +79,5 @@ jobs:
         run: |
           # Compile method and parameter description: https://docs.armbian.com/Developer-Guide_Build-Options
           cd build/
-             ./build.sh all
+             ./build.sh
           echo "status=success" >> ${GITHUB_OUTPUT}
