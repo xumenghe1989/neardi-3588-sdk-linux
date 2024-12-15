@@ -67,7 +67,8 @@ jobs:
           df -hT ${PWD}
           git clone https://github.com/xumenghe1989/neardi-3588-sdk-linux.git build
           ln -sf /builder/build ${GITHUB_WORKSPACE}/build
-          tree /home/runner/work/_actions
+          tree /home/runner/work/
+          tree /builder
           ln -sf /builder/build /home/runner/work/_actions/xumenghe1989/neardi-3588-sdk-linux
           echo "status=success" >> ${GITHUB_OUTPUT}
 
