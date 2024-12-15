@@ -1,56 +1,81 @@
-name: Build and Provide Download Link for neardi-3588-sdk
+#==========================================================================
+# Description: Build Armbian
+# Copyright (C) 2021 https://github.com/ophub/amlogic-s9xxx-armbian
+#==========================================================================
+
+name: Build armbian
 
 on:
-  push:
-    branches:
-      - main
-
+  repository_dispatch:
+  workflow_dispatch:    
+env:
+  TZ: America/New_York
 jobs:
-  build-neardi-3588-sdk:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.8'
+      - name: Initialization environment
+        id: init
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker rmi $(docker images -q) 2>/dev/null
+          [[ -n "${AGENT_TOOLSDIRECTORY}" ]] && sudo rm -rf "${AGENT_TOOLSDIRECTORY}"
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android 2>/dev/null
+          sudo swapoff -a
+          sudo rm -f /swapfile /mnt/swapfile
+          sudo -E apt-get -y update
+          sudo -E apt-get -y purge azure-cli ghc* zulu* llvm* firefox google* dotnet* powershell openjdk* mongodb* moby* || true
+          sudo -E apt-get -y install $(curl -fsSL https://is.gd/depend_ubuntu2204_armbian)
+          sudo -E systemctl daemon-reload
+          #sudo -E apt-get -y full-upgrade
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          sudo sed -i '/NVM_DIR/d;/skel/d' /root/{.bashrc,.profile}
+          sudo rm -rf ~/{.cargo,.dotnet,.rustup}
+          sudo timedatectl set-timezone "${TZ}"
+          echo "status=success" >> ${GITHUB_OUTPUT}
 
-    - name: Install Python Dependencies
-      run: |
-        if [ -f requirements.txt ]; then
-          pip install -r requirements.txt
-        else
-          echo "No requirements.txt found, skipping dependencies installation."
-        fi
+      - name: Create simulated physical disk
+        run: |
+          mnt_size=$(expr $(df -h /mnt | tail -1 | awk '{print $4}' | sed 's/[[:alpha:]]//g' | sed 's/\..*//') - 1)
+          root_size=$(expr $(df -h / | tail -1 | awk '{print $4}' | sed 's/[[:alpha:]]//g' | sed 's/\..*//') - 4)
+          sudo truncate -s "${mnt_size}"G /mnt/mnt.img
+          sudo truncate -s "${root_size}"G /root.img
+          sudo losetup /dev/loop6 /mnt/mnt.img
+          sudo losetup /dev/loop7 /root.img
+          sudo pvcreate /dev/loop6
+          sudo pvcreate /dev/loop7
+          sudo vgcreate github /dev/loop6 /dev/loop7
+          sudo lvcreate -n runner -l 100%FREE github
+          sudo mkfs.xfs /dev/github/runner
+          sudo mkdir -p /builder
+          sudo mount /dev/github/runner /builder
+          sudo chown -R runner.runner /builder
+          df -Th
 
-    - name: Set Execute Permissions for Scripts
-      run: |
-        chmod +x envsetup.sh
-        chmod +x build.sh
+      - name: Download source code
+        id: down
+        working-directory: /builder
+        if: ${{ steps.init.outputs.status }} == 'success' && !cancelled()
+        run: |
+          df -hT ${PWD}
+          git clone -q --single-branch --depth=1 --branch=main https://github.com/xumenghe1989/neardi-3588-sdk-linux.git build
+          ln -sf /builder/build ${GITHUB_WORKSPACE}/build
+          ln -sf /builder/build /home/runner/work/_actions/xumenghe1989/neardi-3588-sdk-linux/main/build
+          echo "status=success" >> ${GITHUB_OUTPUT}
 
-    - name: Run envsetup.sh
-      run: |
-        echo 29 | ./envsetup.sh
-
-    - name: Build the Project
-      run: |
-        ./build.sh
-
-    - name: Archive Build Output
-      run: |
-        mkdir -p output
-        if [ -d build/output ]; then
-          cp -r build/output/* output/
-        else
-          echo "Build output directory does not exist!"
-          exit 1
-        fi
-      
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: neardi-3588-sdk-build
-        path: output/
+      - name: Compile Armbian [ ${{ inputs.set_release }} ]
+        id: compile
+        working-directory: /builder
+        if: ${{ steps.down.outputs.status }} == 'success' && !cancelled()
+        run: |
+          # Compile method and parameter description: https://docs.armbian.com/Developer-Guide_Build-Options
+          cd build/
+             ./build.sh all
+          echo "status=success" >> ${GITHUB_OUTPUT}
